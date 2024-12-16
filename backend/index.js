@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { MongoClient, ObjectId } from "mongodb";
 
 const app = express();
+app.use(express.json());
 
 const port = 3001;
 const url = `mongodb+srv://mayanktamrkar2001:mt9589274762@cluster0.4uei7no.mongodb.net/`;
@@ -115,6 +116,19 @@ app.post("/insertData", async (req, res) => {
   //   });
 
   res.send(test);
+});
+
+app.patch("/updateData/:id", async (req, res) => {
+  const db = await connectToMongoDB();
+  const collection = await db.collection("books");
+  const data = await collection.findByIdAndUpdate(req.params.id, {
+    name: "anjali",
+  });
+
+  const val = req.params.id;
+  console.log(val, "val");
+
+  res.send(val);
 });
 
 app.listen(port, () => {
