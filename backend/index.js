@@ -118,17 +118,37 @@ app.post("/insertData", async (req, res) => {
   res.send(test);
 });
 
-app.patch("/updateData/:id", async (req, res) => {
-  const db = await connectToMongoDB();
-  const collection = await db.collection("books");
-  const data = await collection.findByIdAndUpdate(req.params.id, {
-    name: "anjali",
-  });
+app.get("/api/books", async (req, res) => {
+  const response = await Book.find();
+
+  res.send({ data: response });
+});
+
+app.patch("/update_data", async (req, res) => {
+  debugger;
+  // const id = req.params.id;
+  const id = req.query.id;
+  const value = req.body;
+  console.log("value: ", value);
+  console.log("id: ", id);
+  const response = await Book.findByIdAndUpdate(
+    { _id: id }, // Filter
+    value, // Update values
+    { new: true } // Return the updated document
+  );
+
+  console.log("response: ", response);
 
   const val = req.params.id;
   console.log(val, "val");
 
-  res.send(val);
+  res.send({ data: response });
+});
+app.delete("/delete_books", async (req, res) => {
+  const id = req.query.id;
+
+  const a = await Book.findByIdAndDelete(id, { new: true });
+  res.send(a);
 });
 
 app.listen(port, () => {
