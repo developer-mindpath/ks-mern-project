@@ -1,0 +1,21 @@
+# Step 1: Build the React frontend
+FROM node:20 AS frontend-build
+WORKDIR /mern-frontend
+COPY mern-frontend/package.json mern-frontend/package-lock.json ./
+RUN npm install
+COPY mern-frontend ./
+RUN npm run build
+
+# Step 2: Build the backend server
+FROM node:20 AS backend-build
+WORKDIR /backend
+COPY backend/package.json backend/package-lock.json ./
+RUN npm install
+COPY backend ./
+
+# Copy React build files from Step 1 to the backend's public folder
+COPY --from=frontend-build /mern-frontend/dist ./public
+
+# Step 3: Run the backend server
+EXPOSE 3000
+CMD ["npm" ,"run" ,"prod"]

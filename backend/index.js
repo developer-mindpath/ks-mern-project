@@ -1,20 +1,28 @@
 import express from "express";
 import mongoose from "mongoose";
 import { MongoClient, ObjectId } from "mongodb";
-
+// import path, {dirname} from "path";
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
+ 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+ 
 const app = express();
 app.use(express.json());
-
+ 
 const port = 3001;
 const url = `mongodb+srv://mayanktamrkar2001:mt9589274762@cluster0.4uei7no.mongodb.net/`;
-
+ 
+app.use(express.static(path.join(__dirname, "../mern-frontend", "dist"))); 
+ 
 const bookSchema = new mongoose.Schema({
   title: String,
   author: String,
   year: Number,
 });
 const Book = mongoose.model("Book", bookSchema);
-
+ 
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(url);
@@ -25,12 +33,12 @@ const connectDB = async () => {
   }
 };
 connectDB();
-
+ 
 async function connectToMongoDB() {
   try {
     const client = new MongoClient(url);
     await client.connect();
-
+ 
     console.log("Connected to MongoDB");
     const db = client.db("sample_restaurants");
     return db;
@@ -38,17 +46,17 @@ async function connectToMongoDB() {
     console.error("Failed to connect to MongoDB", error);
   }
 }
-
+ 
 connectToMongoDB();
-
+ 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
+ 
 app.get("/api", (req, res) => {
   res.send({ data: 100 });
 });
-
+ 
 // get data from collection
 app.get("/data", async (req, res) => {
   try {
@@ -63,7 +71,7 @@ app.get("/data", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+ 
 const books = [
   {
     title: "The Catcher in the Rye",
@@ -91,39 +99,39 @@ const books = [
     year: 1813,
   },
 ];
-
+ 
 app.post("/insertData", async (req, res) => {
   console.log("post");
-
+ 
   await connectToMongoDB();
-
+ 
   const newBook = new Book({
     title: "NEw book",
     author: "wertyuio",
     year: 1951,
   });
-
+ 
   const test = await newBook.save();
-
+ 
   // Book.insertMany(books)
-  //   .then(() => {
-  //     console.log("Books inserted successfully");
-  //     mongoose.connection.close(); // Close the connection after insertion
-  //   })
-  //   .catch((err) => {
-  //     console.error("Error inserting books:", err);
-  //     mongoose.connection.close(); // Close the connection on error
-  //   });
-
+  //   .then(() => {
+  //     console.log("Books inserted successfully");
+  //     mongoose.connection.close(); // Close the connection after insertion
+  //   })
+  //   .catch((err) => {
+  //     console.error("Error inserting books:", err);
+  //     mongoose.connection.close(); // Close the connection on error
+  //   });
+ 
   res.send(test);
 });
-
+ 
 app.get("/api/books", async (req, res) => {
   const response = await Book.find();
-
+ 
   res.send({ data: response });
 });
-
+ 
 app.patch("/update_data", async (req, res) => {
   debugger;
   // const id = req.params.id;
@@ -136,19 +144,20 @@ app.patch("/update_data", async (req, res) => {
     value, // Update values
     { new: true } // Return the updated document
   );
-
+ 
   console.log("response: ", response);
-
-  const val = req.params.id;
-  console.log(val, "val");
-
+ 
   res.send({ data: response });
 });
 app.delete("/delete_books", async (req, res) => {
   const id = req.query.id;
-
+ 
   const a = await Book.findByIdAndDelete(id, { new: true });
   res.send(a);
+});
+
+app.get("/*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../mern-frontend/dist/index.html"));
 });
 
 app.listen(port, () => {
